@@ -1,0 +1,38 @@
+setup:
+-download elastic search and kibana from
+    https://www.elastic.co/start
+-and download logstash from
+    https://www.elastic.co/downloads/logstash
+-extract them all to c:/ELK_STACK
+
+running:
+ELASTIC SEARCH
+-open command prompt as admin
+-cd C:\ELK_Stack\elasticsearch-7.9.3\bin
+-elasticsearch-service.bat install
+-elasticsearch.bat
+-http://localhost:9200
+
+KIBANA
+-open command prompt as admin
+-cd C:\ELK_Stack\kibana-7.9.3-windows-x86_64\bin
+-kibana.bat
+-http://localhost:5601
+
+Logstash
+-create a logstash.conf file
+-example conf file
+input {
+    stdin {}
+}
+
+output {
+    elasticsearch {
+        hosts => ["localhost:9200"]
+        index => "indexforlogstash"
+    }
+}
+-open command prompt as admin
+-get the path of .conf file
+-cd path
+-logstash -f logstash.conf

@@ -1,8 +1,11 @@
 import os
 import re
 
-entries = os.listdir("Tutanak/")
+entries = os.listdir("Tutanak/fake")
+print(entries)
+exit()
 
+zerolinecount = 0
 txtcount = 0
 linecount = 0
 wordcount = 0
@@ -15,11 +18,14 @@ for entry in entries:
             txtcount += 1
             f = open(file, encoding="utf-8")
 
-            #find line and word count
+            # find line and word count
             for line in f:
+                if line == '\n':
+                    zerolinecount += 1
+                    continue
 
                 if "BAŞKAN -" in line:
-                    speechcount +=1
+                    speechcount += 1
 
                 x = re.findall('[A-Z ]{2,}\(.*?\)', line)
                 reCount += len(x)
@@ -32,9 +38,9 @@ for entry in entries:
                 res = len(line.split())
                 wordcount += res
 
-print("txtcount: ",txtcount)
-print("linecount: ", linecount, ", ", linecount/txtcount)
-print("wordcount: ", wordcount, ", ", wordcount/txtcount)
-print("BAŞKAN speech: ", speechcount, ", ", speechcount/txtcount)
-print("other speech: ", reCount, ", ", reCount/txtcount)
-
+print("txtcount: ", txtcount)
+print("linecount: ", linecount, ", ", linecount / txtcount)
+print("zerolinecount: ", zerolinecount, ", ", zerolinecount / txtcount)
+print("wordcount: ", wordcount, ", ", wordcount / txtcount)
+print("BAŞKAN speech: ", speechcount, ", ", speechcount / txtcount)
+print("other speech: ", reCount, ", ", reCount / txtcount)

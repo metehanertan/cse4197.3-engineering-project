@@ -41,7 +41,7 @@ def getKonusmaci(konusmaciTam):  # konuşmacı stringinden milletvekili adını 
     return konusmaci
 
 
-def getKonusma(oturum, OturumID, KonusmaID):  # oturumu alıp içinden konuşmaları çıkaran fonksiyon
+def getKonusma(OturumT, KonusmaT, mySqlDB, oturum, OturumID):  # oturumu alıp içinden konuşmaları çıkaran fonksiyon
     pattern = ['[A-ZĞÜŞIÖÇİ\s*]{2,}\([a-zğüşıöçA-ZĞÜŞIÖÇİ]+\)', 'BAŞKAN ']
     regex = re.compile(r'(' + '|'.join(pattern) + r')')
     oturum = oturum[
@@ -57,41 +57,16 @@ def getKonusma(oturum, OturumID, KonusmaID):  # oturumu alıp içinden konuşmal
         konusmaciSehir = getSehir(konusmaciTam)
         konusmaci = getKonusmaci(konusmaciTam)
 
-        KonusmaID += 1
+        # MySql store Milletvekili
+        MilletvekiliID = storeMilletvekili(mySqlDB, konusmaci, konusmaciSehir)
+
+        # MySql store Konusma
+        KonusmaID = storeKonusma(mySqlDB, OturumID, MilletvekiliID, konusmaSırası)
         # MongoDB store Konusma
         mStoreKonusma(KonusmaT, KonusmaID, konusma)
-        # MySql store Konusma
-        storeKonusma(mySqlDB, OturumID, 0, konusmaSırası, KonusmaID)
-
-    return OturumID, KonusmaID
 
 
-def getOturum(tutanak):
-    return
-
-
-def getAllTutanaks(path):
-    print("Reading all Tutanaks in: ", path)
-    tutanakNames = os.listdir(path)
-    for tutanakName in tutanakNames:
-        if tutanakName.endswith(".html"):
-            file = path + tutanakName
-            if os.path.getsize(file) != 0:
-                tutanakArr = []
-                tutanakArr.append(tutanakName)
-                f = open(file, "r", encoding="utf8")
-                tutanak = f.read()
-                tutanak = remove_html_markup(tutanak)
-                tutanak = tutanak.replace(u'\xa0', u'')
-                tutanak = tutanak.replace("\n\n", " ")
-                tutanak = tutanak.replace("  ", " ")
-                tutanakArr.append(tutanak)
-                tutanaklar.append(tutanakArr)
-    print("All Tutanaks read.")
-    return tutanaklar
-
-
-def sendTutanakToDB(tutanak, TutanakID, OturumID, KonusmaID):
+def sendTutanakToDB(OturumT, KonusmaT, mySqlDB, tutanak, TutanakID):
     tutanakSon = len(tutanak)
 
     oturumNumaras = ["BİRİNCİ", "İKİNCİ", "ÜÇÜNCÜ", "DÖRDÜNCÜ", "BEŞİNCİ",
@@ -126,25 +101,25 @@ def sendTutanakToDB(tutanak, TutanakID, OturumID, KonusmaID):
         oturumIndex += 1
 
     for oturumNo in range(1, len(oturumlar)):
-        OturumID += 1
+        # MySql store Oturum
+        OturumID = storeOturum(mySqlDB, TutanakID, oturumNo)
         # MongoDB store Oturum
         mStoreOturum(OturumT, OturumID, oturumlar[oturumNo])
-        # MySql store Oturum
-        storeOturum(mySqlDB, TutanakID, oturumNo, OturumID)
-        OturumID, KonusmaID = getKonusma(oturumlar[oturumNo], OturumID, KonusmaID)
-    return TutanakID, OturumID, KonusmaID
+        getKonusma(OturumT, KonusmaT, mySqlDB, oturumlar[oturumNo], OturumID)
 
+
+"""
 # Creating databases
 db_name = "testdatabase"
 
 # MongoDB
 my_client = pymongo.MongoClient("mongodb://localhost:27017/")
-my_client.drop_database(db_name)
-mongoDb, TutanakT, OturumT, KonusmaT = mCreateDB(my_client, db_name)
+#my_client.drop_database(db_name)
+mongoDb, TutanakT, OturumT, KonusmaT = mConnectDB(my_client, "TBMMDatabase")
 
 # MySql
-deleteDB(db_name)
-mySqlDB = createDB(db_name)
+#deleteDB(db_name)
+mySqlDB = connectToDB(db_name)
 storeMilletvekili(mySqlDB, "BASKAN", "BASKENT", 0)
 
 # Reading all Tutanak htmls
@@ -181,3 +156,4 @@ printTable(mySqlDB, "Oturum")
 #printTable(mySqlDB, "Konusma")
 print("MySql Tutanaklar:")
 printTable(mySqlDB, "Tutanak")
+"""

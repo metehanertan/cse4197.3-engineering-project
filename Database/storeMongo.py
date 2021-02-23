@@ -1,6 +1,15 @@
 import pymongo
 
 
+def mConnectDB(my_client, db_name):
+    database = my_client[db_name]
+    Tutanak = database.get_collection("Tutanak")
+    Oturum = database.get_collection("Oturum")
+    Konusma = database.get_collection("Konusma")
+    print("Connected to Mongo database", database.name)
+    return database, Tutanak, Oturum, Konusma
+
+
 def mCreateDB(my_client, db_name):
     db_list = my_client.list_database_names()
     if not db_name in db_list:
@@ -41,6 +50,7 @@ def mPrintTable(table):
         print(data, end=", ")
     print()
 
+
 def lastTutanakID(Tutanak):
     biggest = 0
     for data in Tutanak.find({}):
@@ -67,6 +77,8 @@ def lastKonusmaID(Konusma):
 
 """
 my_client = pymongo.MongoClient("mongodb://localhost:27017/")
+database, Tutanak, Oturum, Konusma = mConnectDB(my_client, "TBMMDatabase")
+mPrintAllDB(Tutanak, Oturum, Konusma)
 my_client.drop_database("TBMMDatabase")
 database, Tutanak, Oturum, Konusma = mCreateDB(my_client, "TBMMDatabase")
 mStoreTutanak(Tutanak, 1, "Tutanaktxt")

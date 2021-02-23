@@ -3,6 +3,7 @@ from scrapy.crawler import CrawlerProcess
 import re
 import pandas as pd
 from IPython.display import display, HTML
+import datetime
 
 from Database.parse import *
 from Database.storeMongo import *
@@ -58,7 +59,7 @@ class URLSpider(scrapy.Spider):
         birlesimNo = response.xpath('/html//a[contains (text(),"Birleşim")]/text()').extract()
         birlesimNo = [no.split(".")[0] for no in birlesimNo]
         dates = response.xpath('//table[@cols="2"]/tr[*]/td[2]/text()').extract()
-        dates = [date.split()[0] for date in dates]
+        dates = [datetime.datetime.strptime(date.split()[0], '%Y.%m.%d') for date in dates]
         global records
         for i in range(len(birlesimURL)):
             record = {'Dönem': donemNo, 'DönemYıl': yilNo, 'Tarih': dates[i], 'Birleşim': birlesimNo[i],

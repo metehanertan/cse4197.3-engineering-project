@@ -14,14 +14,14 @@ db_name = "testdatabase"
 
 # MongoDB
 my_client = pymongo.MongoClient("mongodb://localhost:27017/")
-my_client.drop_database(db_name)
-mongoDb, TutanakT, OturumT, KonusmaT = mCreateDB(my_client, db_name)
-#mongoDb, TutanakT, OturumT, KonusmaT = mConnectDB(my_client, db_name)
+#my_client.drop_database(db_name)
+#mongoDb, TutanakT, OturumT, KonusmaT = mCreateDB(my_client, db_name)
+mongoDb, TutanakT, OturumT, KonusmaT = mConnectDB(my_client, db_name)
 
 # MySql
-deleteDB(db_name)
-mySqlDB = createDB(db_name)
-#mySqlDB = connectToDB(db_name)
+#deleteDB(db_name)
+#mySqlDB = createDB(db_name)
+mySqlDB = connectToDB(db_name)
 
 dict = {'Dönem': [],
         'DönemYıl': [],
@@ -62,14 +62,15 @@ class URLSpider(scrapy.Spider):
         dates = [date.split()[0] for date in dates]
         global records
         for i in range(len(birlesimURL)):
-            record = {'Dönem': donemNo, 'DönemYıl': yilNo, 'Tarih': dates[i], 'Birleşim': birlesimNo[i],
-                      'BirleşimURL': birlesimURL[i]}
-            records = records.append(record, ignore_index=True)
-            # MySql store Tutanak
-            TutanakID = storeTutanak(mySqlDB, donemNo, yilNo, dates[i], birlesimNo[i], birlesimURL[i])
-            request = scrapy.Request(url=birlesimURL[i], callback=self.parseTutanak)
-            request.cb_kwargs['TutanakID'] = TutanakID
-            yield request
+            if not checkIfStored(mySqlDB, birlesimURL[i]):
+                record = {'Dönem': donemNo, 'DönemYıl': yilNo, 'Tarih': dates[i], 'Birleşim': birlesimNo[i],
+                        'BirleşimURL': birlesimURL[i]}
+                records = records.append(record, ignore_index=True)
+                # MySql store Tutanak
+                TutanakID = storeTutanak(mySqlDB, donemNo, yilNo, dates[i], birlesimNo[i], birlesimURL[i])
+                request = scrapy.Request(url=birlesimURL[i], callback=self.parseTutanak)
+                request.cb_kwargs['TutanakID'] = TutanakID
+                yield request
 
     def parseTutanak(self, response, TutanakID):
         yield TutanakID

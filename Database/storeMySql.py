@@ -101,7 +101,6 @@ def storeKonusma(db, OturumID, MilletvekiliID, KonusmaSırası):
 
 def storeMilletvekili(db, isim, sehir):
     mycursor = db.cursor(buffered=True)
-
     mycursor.execute(
         "SELECT MilletvekiliID FROM Milletvekili WHERE MilletvekiliAdi = %s AND MilletvekiliSehri = %s LIMIT 1",
         (isim, sehir))
@@ -113,6 +112,21 @@ def storeMilletvekili(db, isim, sehir):
         MilletvekiliID = mycursor.lastrowid
     mycursor.close()
     return MilletvekiliID
+
+
+def checkIfStored(db, url):
+    mycursor = db.cursor(buffered=True)
+    mycursor.execute("SELECT * FROM Tutanak  WHERE TutanakURL = '%s'" %
+                     str(url))
+    res = mycursor.fetchall()
+    if len(res) == 0:
+        # print("NEW !!! ", url)
+        mycursor.close()
+        return False
+    else:
+        # print("HIT !!! ", url)
+        mycursor.close()
+        return True
 
 
 def printAllTables(db):

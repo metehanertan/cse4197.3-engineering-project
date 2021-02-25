@@ -74,7 +74,7 @@ def storeTutanak(db, Donem, DonemYil, Tarih, BirlesimNo, TutanakURL):
     mycursor.execute("INSERT INTO Tutanak (Donem,DonemYil,Tarih,BirlesimNo,TutanakURL) VALUES (%s,%s,%s,%s,%s)",
                      (Donem, DonemYil, Tarih, BirlesimNo, TutanakURL))
     db.commit()
-    TutanakID = mycursor.execute("SELECT TutanakID FROM Tutanak WHERE TutanakURL=TutanakURL")
+    TutanakID = mycursor.lastrowid
     mycursor.close()
     return TutanakID
 
@@ -84,8 +84,7 @@ def storeOturum(db, TutanakID, OturumNo):
     mycursor.execute("INSERT INTO Oturum (TutanakID, OturumNo) VALUES (%s,%s)",
                      (TutanakID, OturumNo))
     db.commit()
-    OturumID = mycursor.execute("SELECT OturumID FROM Oturum WHERE TutanakID = TutanakID AND "
-                                "OturumNo = OturumNo")
+    OturumID = mycursor.lastrowid
     mycursor.close()
     return OturumID
 
@@ -95,8 +94,7 @@ def storeKonusma(db, OturumID, MilletvekiliID, KonusmaSırası):
     mycursor.execute("INSERT INTO Konusma (OturumID, MilletvekiliID, KonusmaSırası) VALUES (%s,%s,%s)",
                      (OturumID, MilletvekiliID, KonusmaSırası))
     db.commit()
-    KonusmaID = mycursor.execute("SELECT KonusmaID FROM Konusma WHERE OturumID = OturumID AND"
-                                 " MilletvekiliID = MilletvekiliID AND KonusmaSırası = KonusmaSırası")
+    KonusmaID = mycursor.lastrowid
     mycursor.close()
     return KonusmaID
 
@@ -112,12 +110,9 @@ def storeMilletvekili(db, isim, sehir):
         mycursor.execute("INSERT INTO Milletvekili (MilletvekiliAdi,MilletvekiliSehri) VALUES (%s,%s)",
                          (isim, sehir))
         db.commit()
-        mycursor.execute(
-            "SELECT MilletvekiliID FROM Milletvekili WHERE MilletvekiliAdi = MilletvekiliAdi AND "
-            "MilletvekiliSehri = MilletvekiliSehri")
-        MilletvekiliID = mycursor.fetchone()
+        MilletvekiliID = mycursor.lastrowid
     mycursor.close()
-    return MilletvekiliID[0]
+    return MilletvekiliID
 
 
 def printAllTables(db):
@@ -152,6 +147,7 @@ def printAllDB(db):
         printTable(db, table[0].capitalize())
     print()
     dbcursor.close()
+
 
 def printTable(db, tableName):
     tablecursor = db.cursor(buffered=True)

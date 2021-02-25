@@ -67,10 +67,12 @@ class URLSpider(scrapy.Spider):
             records = records.append(record, ignore_index=True)
             # MySql store Tutanak
             TutanakID = storeTutanak(mySqlDB, donemNo, yilNo, dates[i], birlesimNo[i], birlesimURL[i])
-            yield scrapy.Request(url=birlesimURL[i], callback=self.parseTutanak)
+            request = scrapy.Request(url=birlesimURL[i], callback=self.parseTutanak)
+            request.cb_kwargs['TutanakID'] = TutanakID
+            yield request
 
-    def parseTutanak(self, response):
-        TutanakID = 0
+    def parseTutanak(self, response, TutanakID):
+        yield TutanakID
         fileName = response.url
         fileName = fileName.replace("/", "_")
         fileName = fileName.replace(".", "")

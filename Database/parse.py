@@ -100,7 +100,7 @@ def sendTutanakToDB(OturumT, KonusmaT, mySqlDB, tutanak, TutanakID):
         oturumlar.append(oturum)
         oturumBaşlangıçIndex = oturumSonIndex
         oturumIndex += 1
-    print(len(oturumlar))
+    #print(len(oturumlar))
     for oturumNo in range(1, len(oturumlar)):
         # MySql store Oturum
         OturumID = storeOturum(mySqlDB, TutanakID, oturumNo)

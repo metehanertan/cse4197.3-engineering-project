@@ -11,9 +11,10 @@ def deleteDB(dbname):
     )
     if not db.is_connected():
         return
-    mycursor = db.cursor()
+    mycursor = db.cursor(buffered=True)
     mycursor.execute("DROP DATABASE {0}".format(dbname))
     print("Database \"{0}\" deleted.".format(dbname))
+    mycursor.close()
 
 
 def createDB(dbname):
@@ -23,9 +24,10 @@ def createDB(dbname):
         passwd="metehan199",
         auth_plugin="mysql_native_password"
     )
-    mycursor = db.cursor()
+    mycursor = db.cursor(buffered=True)
     mycursor.execute("CREATE DATABASE {0}".format(dbname))
     print("MySql database \"{0}\" created.".format(dbname))
+    mycursor.close()
     return createCollumns(dbname)
 
 
@@ -37,6 +39,7 @@ def connectToDB(dbname):
         auth_plugin="mysql_native_password",
         database=dbname
     )
+
     return db
 
 
@@ -48,7 +51,7 @@ def createCollumns(dbname):
         auth_plugin="mysql_native_password",
         database=dbname
     )
-    mycursor = db.cursor()
+    mycursor = db.cursor(buffered=True)
     mycursor.execute(
         "CREATE TABLE Tutanak (Donem int, DonemYil int, Tarih varchar(10), BirlesimNo int, TutanakURL varchar(70),"
         " TutanakID int PRIMARY KEY AUTO_INCREMENT)")
@@ -62,38 +65,42 @@ def createCollumns(dbname):
         "CREATE TABLE Konusma (OturumID int, FOREIGN KEY(OturumID) REFERENCES Oturum(OturumID),"
         " MilletvekiliID int, FOREIGN KEY(MilletvekiliID) REFERENCES Milletvekili(MilletvekiliID),"
         " KonusmaSırası int, KonusmaID int PRIMARY KEY AUTO_INCREMENT)")
+    mycursor.close()
     return db
 
 
 def storeTutanak(db, Donem, DonemYil, Tarih, BirlesimNo, TutanakURL):
-    mycursor = db.cursor()
+    mycursor = db.cursor(buffered=True)
     mycursor.execute("INSERT INTO Tutanak (Donem,DonemYil,Tarih,BirlesimNo,TutanakURL) VALUES (%s,%s,%s,%s,%s)",
                      (Donem, DonemYil, Tarih, BirlesimNo, TutanakURL))
     db.commit()
     TutanakID = mycursor.execute("SELECT TutanakID FROM Tutanak ORDER BY TutanakID DESC LIMIT 1")
+    mycursor.close()
     return TutanakID
 
 
 def storeOturum(db, TutanakID, OturumNo):
-    mycursor = db.cursor()
+    mycursor = db.cursor(buffered=True)
     mycursor.execute("INSERT INTO Oturum (TutanakID, OturumNo) VALUES (%s,%s)",
                      (TutanakID, OturumNo))
     db.commit()
     OturumID = mycursor.execute("SELECT OturumID FROM Oturum ORDER BY OturumID DESC LIMIT 1")
+    mycursor.close()
     return OturumID
 
 
 def storeKonusma(db, OturumID, MilletvekiliID, KonusmaSırası):
-    mycursor = db.cursor()
+    mycursor = db.cursor(buffered=True)
     mycursor.execute("INSERT INTO Konusma (OturumID, MilletvekiliID, KonusmaSırası) VALUES (%s,%s,%s)",
                      (OturumID, MilletvekiliID, KonusmaSırası))
     db.commit()
     KonusmaID = mycursor.execute("SELECT KonusmaID FROM Konusma ORDER BY KonusmaID DESC LIMIT 1")
+    mycursor.close()
     return KonusmaID
 
 
 def storeMilletvekili(db, isim, sehir):
-    mycursor = db.cursor()
+    mycursor = db.cursor(buffered=True)
 
     mycursor.execute(
         "SELECT MilletvekiliID FROM Milletvekili WHERE MilletvekiliAdi = %s AND MilletvekiliSehri = %s LIMIT 1",
@@ -106,6 +113,7 @@ def storeMilletvekili(db, isim, sehir):
         mycursor.execute(
             "SELECT MilletvekiliID FROM Milletvekili ORDER BY MilletvekiliID DESC LIMIT 1")
         MilletvekiliID = mycursor.fetchone()
+    mycursor.close()
     return MilletvekiliID[0]
 
 
@@ -125,6 +133,7 @@ def printAllTables(db):
             print(info[0], info[1], info[3], end=", ")
         print()
     print()
+    dbcursor.close()
 
 
 def printAllDB(db):
@@ -139,14 +148,15 @@ def printAllDB(db):
         print(table[0], ":")
         printTable(db, table[0].capitalize())
     print()
-
+    dbcursor.close()
 
 def printTable(db, tableName):
-    tablecursor = db.cursor()
+    tablecursor = db.cursor(buffered=True)
     sql = "SELECT * FROM {0}".format(tableName)
     tablecursor.execute(sql)
     for info in tablecursor:
         print(info)
+    tablecursor.close()
 
 """
 deleteDB("testdatabase")

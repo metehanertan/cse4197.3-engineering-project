@@ -41,7 +41,7 @@ def getKonusmaci(konusmaciTam):  # konuşmacı stringinden milletvekili adını 
     return konusmaci
 
 
-def getKonusma(OturumT, KonusmaT, mySqlDB, oturum, OturumID):  # oturumu alıp içinden konuşmaları çıkaran fonksiyon
+def getKonusma(KonusmaT, mySqlDB, oturum, OturumID):  # oturumu alıp içinden konuşmaları çıkaran fonksiyon
     pattern = ['[A-ZĞÜŞIÖÇİ\s*]{2,}\([a-zğüşıöçA-ZĞÜŞIÖÇİ]+\)', 'BAŞKAN ']
     regex = re.compile(r'(' + '|'.join(pattern) + r')')
     oturum = oturum[
@@ -64,6 +64,7 @@ def getKonusma(OturumT, KonusmaT, mySqlDB, oturum, OturumID):  # oturumu alıp i
         KonusmaID = storeKonusma(mySqlDB, OturumID, MilletvekiliID, konusmaSırası)
         # MongoDB store Konusma
         mStoreKonusma(KonusmaT, KonusmaID, konusma)
+        print("Konuşma: ",KonusmaID)
 
 
 def sendTutanakToDB(OturumT, KonusmaT, mySqlDB, tutanak, TutanakID):
@@ -99,14 +100,14 @@ def sendTutanakToDB(OturumT, KonusmaT, mySqlDB, tutanak, TutanakID):
         oturumlar.append(oturum)
         oturumBaşlangıçIndex = oturumSonIndex
         oturumIndex += 1
-
+    print(len(oturumlar))
     for oturumNo in range(1, len(oturumlar)):
         # MySql store Oturum
         OturumID = storeOturum(mySqlDB, TutanakID, oturumNo)
+        print("Oturum:",OturumID)
         # MongoDB store Oturum
         mStoreOturum(OturumT, OturumID, oturumlar[oturumNo])
-        getKonusma(OturumT, KonusmaT, mySqlDB, oturumlar[oturumNo], OturumID)
-
+        getKonusma(KonusmaT, mySqlDB, oturumlar[oturumNo], OturumID)
 
 """
 # Creating databases

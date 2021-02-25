@@ -11,15 +11,17 @@ from Database.storeMySql import *
 
 # Creating databases
 db_name = "testdatabase"
-TutanakID=0
 
 # MongoDB
 my_client = pymongo.MongoClient("mongodb://localhost:27017/")
-mongoDb, TutanakT, OturumT, KonusmaT = mConnectDB(my_client, "TBMMDatabase")
+my_client.drop_database(db_name)
+mongoDb, TutanakT, OturumT, KonusmaT = mCreateDB(my_client, db_name)
+#mongoDb, TutanakT, OturumT, KonusmaT = mConnectDB(my_client, db_name)
 
 # MySql
-mySqlDB = connectToDB(db_name)
-storeMilletvekili(mySqlDB, "BASKAN", "BASKENT")
+deleteDB(db_name)
+mySqlDB = createDB(db_name)
+#mySqlDB = connectToDB(db_name)
 
 dict = {'Dönem': [],
         'DönemYıl': [],
@@ -42,15 +44,12 @@ class URLSpider(scrapy.Spider):
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parseYil)
 
-
     def parseYil(self, response):
 
         yilURL = response.css(".anaORTAsayfaBaslik a::attr(href)").extract()
 
         for yil in yilURL:
             yield scrapy.Request(url=yil, callback=self.parseBirlesim)
-            print(yil)
-
 
     def parseBirlesim(self, response):
         parsingURL = re.findall('://www.tbmm.gov.tr/tutanak/donem([\w\-\.]+)/tutanak([\w\-\.]+).htm', response.url)
@@ -70,8 +69,8 @@ class URLSpider(scrapy.Spider):
             TutanakID = storeTutanak(mySqlDB, donemNo, yilNo, dates[i], birlesimNo[i], birlesimURL[i])
             yield scrapy.Request(url=birlesimURL[i], callback=self.parseTutanak)
 
-
     def parseTutanak(self, response):
+        TutanakID = 0
         fileName = response.url
         fileName = fileName.replace("/", "_")
         fileName = fileName.replace(".", "")
@@ -104,4 +103,4 @@ process.crawl(URLSpider)
 process.start()
 
 # pd.set_option('display.max_colwidth', -1)
-#display(records)
+# display(records)

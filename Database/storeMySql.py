@@ -74,7 +74,7 @@ def storeTutanak(db, Donem, DonemYil, Tarih, BirlesimNo, TutanakURL):
     mycursor.execute("INSERT INTO Tutanak (Donem,DonemYil,Tarih,BirlesimNo,TutanakURL) VALUES (%s,%s,%s,%s,%s)",
                      (Donem, DonemYil, Tarih, BirlesimNo, TutanakURL))
     db.commit()
-    TutanakID = mycursor.execute("SELECT TutanakID FROM Tutanak ORDER BY TutanakID DESC LIMIT 1")
+    TutanakID = mycursor.execute("SELECT TutanakID FROM Tutanak WHERE TutanakURL=TutanakURL")
     mycursor.close()
     return TutanakID
 
@@ -84,7 +84,8 @@ def storeOturum(db, TutanakID, OturumNo):
     mycursor.execute("INSERT INTO Oturum (TutanakID, OturumNo) VALUES (%s,%s)",
                      (TutanakID, OturumNo))
     db.commit()
-    OturumID = mycursor.execute("SELECT OturumID FROM Oturum ORDER BY OturumID DESC LIMIT 1")
+    OturumID = mycursor.execute("SELECT OturumID FROM Oturum WHERE TutanakID = TutanakID AND "
+                                "OturumNo = OturumNo")
     mycursor.close()
     return OturumID
 
@@ -94,7 +95,8 @@ def storeKonusma(db, OturumID, MilletvekiliID, KonusmaSırası):
     mycursor.execute("INSERT INTO Konusma (OturumID, MilletvekiliID, KonusmaSırası) VALUES (%s,%s,%s)",
                      (OturumID, MilletvekiliID, KonusmaSırası))
     db.commit()
-    KonusmaID = mycursor.execute("SELECT KonusmaID FROM Konusma ORDER BY KonusmaID DESC LIMIT 1")
+    KonusmaID = mycursor.execute("SELECT KonusmaID FROM Konusma WHERE OturumID = OturumID AND"
+                                 " MilletvekiliID = MilletvekiliID AND KonusmaSırası = KonusmaSırası")
     mycursor.close()
     return KonusmaID
 
@@ -111,7 +113,8 @@ def storeMilletvekili(db, isim, sehir):
                          (isim, sehir))
         db.commit()
         mycursor.execute(
-            "SELECT MilletvekiliID FROM Milletvekili ORDER BY MilletvekiliID DESC LIMIT 1")
+            "SELECT MilletvekiliID FROM Milletvekili WHERE MilletvekiliAdi = MilletvekiliAdi AND "
+            "MilletvekiliSehri = MilletvekiliSehri")
         MilletvekiliID = mycursor.fetchone()
     mycursor.close()
     return MilletvekiliID[0]
@@ -157,6 +160,7 @@ def printTable(db, tableName):
     for info in tablecursor:
         print(info)
     tablecursor.close()
+
 
 """
 deleteDB("testdatabase")

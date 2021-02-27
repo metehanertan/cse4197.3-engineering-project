@@ -59,7 +59,7 @@ def createCollumns(dbname):
         "CREATE TABLE Oturum (TutanakID int, FOREIGN KEY(TutanakID) REFERENCES Tutanak(TutanakID), OturumNo int,"
         " OturumID int PRIMARY KEY AUTO_INCREMENT)")
     mycursor.execute(
-        "CREATE TABLE Milletvekili (MilletvekiliAdi varchar(30), MilletvekiliSehri varchar(15) ,"
+        "CREATE TABLE Milletvekili (MilletvekiliAdi varchar(100), MilletvekiliSehri varchar(20) ,"
         " MilletvekiliID int PRIMARY KEY AUTO_INCREMENT)")
     mycursor.execute(
         "CREATE TABLE Konusma (OturumID int, FOREIGN KEY(OturumID) REFERENCES Oturum(OturumID),"

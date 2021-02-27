@@ -59,12 +59,13 @@ def getKonusma(KonusmaT, mySqlDB, oturum, OturumID):  # oturumu alıp içinden k
 
         # MySql store Milletvekili
         MilletvekiliID = storeMilletvekili(mySqlDB, konusmaci, konusmaciSehir)
+        if type(MilletvekiliID) is tuple:
+            MilletvekiliID = int(MilletvekiliID[0])
 
         # MySql store Konusma
         KonusmaID = storeKonusma(mySqlDB, OturumID, MilletvekiliID, konusmaSırası)
         # MongoDB store Konusma
         mStoreKonusma(KonusmaT, KonusmaID, konusma)
-        print("Konuşma: ",KonusmaID)
 
 
 def sendTutanakToDB(OturumT, KonusmaT, mySqlDB, tutanak, TutanakID):
@@ -88,7 +89,7 @@ def sendTutanakToDB(OturumT, KonusmaT, mySqlDB, tutanak, TutanakID):
 
     for oturumNumara in oturumNumaras:  # oturumlara ayırıyoruz
 
-        oturumBaşlangıç = oturumNumara + " OTURUM Açılma Saati:"
+        oturumBaşlangıç = oturumNumara + " OTURUM\nAçılma Saati:"
         oturumSonIndex = tutanak.find(oturumBaşlangıç)
         if oturumSonIndex == -1:  # eğer oturum yoksa son oturum demek
             oturumSonIndex = tutanakSon
@@ -100,11 +101,9 @@ def sendTutanakToDB(OturumT, KonusmaT, mySqlDB, tutanak, TutanakID):
         oturumlar.append(oturum)
         oturumBaşlangıçIndex = oturumSonIndex
         oturumIndex += 1
-    #print(len(oturumlar))
     for oturumNo in range(1, len(oturumlar)):
         # MySql store Oturum
         OturumID = storeOturum(mySqlDB, TutanakID, oturumNo)
-        print("Oturum:",OturumID)
         # MongoDB store Oturum
         mStoreOturum(OturumT, OturumID, oturumlar[oturumNo])
         getKonusma(KonusmaT, mySqlDB, oturumlar[oturumNo], OturumID)

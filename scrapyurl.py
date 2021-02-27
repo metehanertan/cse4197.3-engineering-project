@@ -14,14 +14,14 @@ db_name = "testdatabase"
 
 # MongoDB
 my_client = pymongo.MongoClient("mongodb://localhost:27017/")
-#my_client.drop_database(db_name)
-#mongoDb, TutanakT, OturumT, KonusmaT = mCreateDB(my_client, db_name)
-mongoDb, TutanakT, OturumT, KonusmaT = mConnectDB(my_client, db_name)
+my_client.drop_database(db_name)
+mongoDb, TutanakT, OturumT, KonusmaT = mCreateDB(my_client, db_name)
+#mongoDb, TutanakT, OturumT, KonusmaT = mConnectDB(my_client, db_name)
 
 # MySql
-#deleteDB(db_name)
-#mySqlDB = createDB(db_name)
-mySqlDB = connectToDB(db_name)
+deleteDB(db_name)
+mySqlDB = createDB(db_name)
+#mySqlDB = connectToDB(db_name)
 
 dict = {'Dönem': [],
         'DönemYıl': [],
@@ -93,8 +93,11 @@ class URLSpider(scrapy.Spider):
 
         tutanak = ''.join(tutanak)
         tutanak = remove_html_markup(tutanak)
+        tutanak = tutanak.strip()
         tutanak = tutanak.replace('\xa0', '')
-        tutanak = tutanak.replace("\n\n", " ")
+        tutanak = tutanak.replace("\r", "")
+        while "\n\n" in tutanak:
+            tutanak = tutanak.replace("\n\n", "\n")
         tutanak = tutanak.replace("  ", " ")
         # MongoDB store Tutanak
         mStoreTutanak(TutanakT, TutanakID, tutanak)

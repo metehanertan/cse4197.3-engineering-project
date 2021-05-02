@@ -6,7 +6,6 @@ def mConnectDB(my_client, db_name):
     Tutanak = database.get_collection("Tutanak")
     Oturum = database.get_collection("Oturum")
     Konusma = database.get_collection("Konusma")
-    print("Connected to Mongo database", database.name)
     return database, Tutanak, Oturum, Konusma
 
 
@@ -17,8 +16,23 @@ def mCreateDB(my_client, db_name):
         Tutanak = database.create_collection("Tutanak")
         Oturum = database.create_collection("Oturum")
         Konusma = database.create_collection("Konusma")
-        print("Mongo database", database.name, " created.")
         return database, Tutanak, Oturum, Konusma
+
+
+def mCreateAnalysisDB(my_client, db_name):
+        database = my_client[db_name]
+        Lemma = database.create_collection("Lemma")
+        NER = database.create_collection("NER")
+        Topic = database.create_collection("Topic")
+        return database, Lemma, NER, Topic
+
+
+def mConnectAnalysisDB(my_client, db_name):
+    database = my_client[db_name]
+    Lemma = database.get_collection("Lemma")
+    NER = database.get_collection("NER")
+    Topic = database.get_collection("Topic")
+    return database, Lemma, NER, Topic
 
 
 def mStoreTutanak(Tutanak, TutanakID, Tutanaktext):
@@ -34,6 +48,21 @@ def mStoreOturum(Oturum, OturumID, Oturumtext):
 def mStoreKonusma(Konusma, KonusmaID, Konusmatext):
     mydict = {"KonusmaID": KonusmaID, "Konusmatext": Konusmatext}
     Konusma.insert_one(mydict)
+
+
+def mStoreLemma(Lemma, KonusmaID, Lemmas):
+    mydict = {"KonusmaID": KonusmaID, "Lemmas": Lemmas}
+    Lemma.insert_one(mydict)
+
+
+def mStoreNER(NER, KonusmaID, NERs):
+    mydict = {"KonusmaID": KonusmaID, "NERs": NERs}
+    NER.insert_one(mydict)
+
+
+def mStoreTopic(Topic, KonusmaID, Topics, Sentiments):
+    mydict = {"KonusmaID": KonusmaID, "Topics": Topics, "Sentiments": Sentiments}
+    Topic.insert_one(mydict)
 
 
 def mPrintAllDB(Tutanak, Oturum, Konusma):

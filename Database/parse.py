@@ -4,6 +4,7 @@ import sys
 import pymongo
 import re
 
+from Database.nlp import findNer, sentimentAnalysis, findLemma
 from Database.storeMongo import *
 from Database.storeMySql import *
 
@@ -53,7 +54,7 @@ def getKonusma(KonusmaT, mySqlDB, oturum, OturumID):  # oturumu alıp içinden k
 
     for konusmaSırası in range(konusmaSayısı):  # Bütün konuşmalar; konuşmacı,şehir, konuşma sırası şeklinde
         konusmaciTam = konusmalar[konusmaSırası * 2]
-        konusma = konusmalar[(konusmaSırası * 2) + 1]
+        konusma = konusmalar[(konusmaSırası * 2) + 1].strip()[2:]  # konusmayi düzgün alma
         konusmaciSehir = getSehir(konusmaciTam)
         konusmaci = getKonusmaci(konusmaciTam)
 
@@ -64,8 +65,20 @@ def getKonusma(KonusmaT, mySqlDB, oturum, OturumID):  # oturumu alıp içinden k
 
         # MySql store Konusma
         KonusmaID = storeKonusma(mySqlDB, OturumID, MilletvekiliID, konusmaSırası)
+        # NLP on konusma
+        Lemma = findLemma(konusma)
+        NER = findNer(konusma)
+        Sentiment = sentimentAnalysis(konusma)
         # MongoDB store Konusma
-        mStoreKonusma(KonusmaT, KonusmaID, konusma)
+        mStoreKonusma(KonusmaT, KonusmaID, konusma, Lemma, NER, Sentiment)
+
+        if not os.path.exists('KonusmaDB'):
+            os.makedirs('KonusmaDB')
+
+        filePath = 'KonusmaDB\\' + str(KonusmaID) + ".txt"
+        f = open(filePath, "w", encoding='utf-8')
+        f.write(konusma)
+        f.close()
 
 
 def sendTutanakToDB(OturumT, KonusmaT, mySqlDB, tutanak, TutanakID):
@@ -89,7 +102,7 @@ def sendTutanakToDB(OturumT, KonusmaT, mySqlDB, tutanak, TutanakID):
 
     for oturumNumara in oturumNumaras:  # oturumlara ayırıyoruz
 
-        oturumBaşlangıç = oturumNumara + " OTURUM\nAçılma Saati:"
+        oturumBaşlangıç = oturumNumara + " OTURUM Açılma Saati:"
         oturumSonIndex = tutanak.find(oturumBaşlangıç)
         if oturumSonIndex == -1:  # eğer oturum yoksa son oturum demek
             oturumSonIndex = tutanakSon
@@ -101,12 +114,18 @@ def sendTutanakToDB(OturumT, KonusmaT, mySqlDB, tutanak, TutanakID):
         oturumlar.append(oturum)
         oturumBaşlangıçIndex = oturumSonIndex
         oturumIndex += 1
-    for oturumNo in range(1, len(oturumlar)):
+
+        # OturumID = storeOturum(mySqlDB, TutanakID, 0)  # Oturum 0'ı ekleme
+        # mStoreOturum(OturumT, OturumID, oturumlar[0])  # Oturum 0'ı ekleme
+
+    for oturumNo in range(0, len(oturumlar)):
         # MySql store Oturum
         OturumID = storeOturum(mySqlDB, TutanakID, oturumNo)
         # MongoDB store Oturum
         mStoreOturum(OturumT, OturumID, oturumlar[oturumNo])
-        getKonusma(KonusmaT, mySqlDB, oturumlar[oturumNo], OturumID)
+        if oturumNo > 0:
+            getKonusma(KonusmaT, mySqlDB, oturumlar[oturumNo], OturumID)
+
 
 """
 # Creating databases

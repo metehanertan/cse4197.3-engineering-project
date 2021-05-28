@@ -10,18 +10,18 @@ from Database.storeMongo import *
 from Database.storeMySql import *
 
 # Creating databases
-db_name = "testdatabase"
+db_name = "testdatabase2"
 
 # MongoDB
 my_client = pymongo.MongoClient("mongodb://localhost:27017/")
-my_client.drop_database(db_name)
-mongoDb, TutanakT, OturumT, KonusmaT = mCreateDB(my_client, db_name)
-#mongoDb, TutanakT, OturumT, KonusmaT = mConnectDB(my_client, db_name)
+# my_client.drop_database(db_name)
+# mongoDb, TutanakT, OturumT, KonusmaT = mCreateDB(my_client, db_name)
+mongoDb, TutanakT, OturumT, KonusmaT = mConnectDB(my_client, db_name)
 
 # MySql
-deleteDB(db_name)
-mySqlDB = createDB(db_name)
-#mySqlDB = connectToDB(db_name)
+# deleteDB(db_name)
+# mySqlDB = createDB(db_name)
+mySqlDB = connectToDB(db_name)
 
 dict = {'Dönem': [],
         'DönemYıl': [],
@@ -39,9 +39,13 @@ class URLSpider(scrapy.Spider):
 
     def start_requests(self):
         urls = [
+            # 'https://www.tbmm.gov.tr/tutanak/donem27/yil1/ham/b00301h.htm',
+            # 'https://www.tbmm.gov.tr/tutanak/donem21/tutanak5.htm',
             'https://www.tbmm.gov.tr/tutanak/tutanaklar.htm',
         ]
         for url in urls:
+            # yield scrapy.Request(url=url, callback=self.parseTutanak)
+            # yield scrapy.Request(url=url, callback=self.parseBirlesim)
             yield scrapy.Request(url=url, callback=self.parseYil)
 
     def parseYil(self, response):
@@ -61,10 +65,12 @@ class URLSpider(scrapy.Spider):
         dates = response.xpath('//table[@cols="2"]/tr[*]/td[2]/text()').extract()
         dates = [date.split()[0] for date in dates]
         global records
-        for i in range(len(birlesimURL)):
+        for i in range(len(birlesimURL)):  # len(birlesimURL)
+            if i == 3:
+                break
             if not checkIfStored(mySqlDB, birlesimURL[i]):
                 record = {'Dönem': donemNo, 'DönemYıl': yilNo, 'Tarih': dates[i], 'Birleşim': birlesimNo[i],
-                        'BirleşimURL': birlesimURL[i]}
+                          'BirleşimURL': birlesimURL[i]}
                 records = records.append(record, ignore_index=True)
                 # MySql store Tutanak
                 TutanakID = storeTutanak(mySqlDB, donemNo, yilNo, dates[i], birlesimNo[i], birlesimURL[i])
@@ -91,14 +97,16 @@ class URLSpider(scrapy.Spider):
         if tutanak is None:
             tutanak = response
 
+        # konusmayı tek satir haline getirme
         tutanak = ''.join(tutanak)
         tutanak = remove_html_markup(tutanak)
         tutanak = tutanak.strip()
         tutanak = tutanak.replace('\xa0', '')
         tutanak = tutanak.replace("\r", "")
-        while "\n\n" in tutanak:
-            tutanak = tutanak.replace("\n\n", "\n")
-        tutanak = tutanak.replace("  ", " ")
+        tutanak = tutanak.replace("\n\n", " ")
+        tutanak = tutanak.replace("\n", " ")
+        while "  " in tutanak:
+            tutanak = tutanak.replace("  ", " ")
         # MongoDB store Tutanak
         mStoreTutanak(TutanakT, TutanakID, tutanak)
         sendTutanakToDB(OturumT, KonusmaT, mySqlDB, tutanak, TutanakID)

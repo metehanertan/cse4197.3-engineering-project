@@ -2,6 +2,8 @@ import codecs
 import os
 import re
 
+from storeMongo import *
+
 
 def remove_html_markup(s):
     tag = False
@@ -21,6 +23,45 @@ def remove_html_markup(s):
     return out
 
 
+def remove_extra_line(KonusmaT):
+    i = 1
+    for data in KonusmaT.find({}):
+
+        ID = data.get("KonusmaID")
+        oldtext = data.get("Konusmatext")
+        text = oldtext
+
+        if text.startswith('– ') or text.startswith(' –'):
+            text = text[2:]
+        elif text.startswith(' – '):
+            text = text[3:]
+        else:
+            continue
+
+        print(ID)
+        text = text.replace('\n', ' ')
+        while text.__contains__('  '):
+            text = text.replace('  ', ' ')
+
+        myquery = {"Konusmatext": oldtext}
+        newvalues = {"$set": {"Konusmatext": text}}
+        KonusmaT.update_one(myquery, newvalues)
+
+
+def remove_loop(KonusmaT):
+    try:
+        remove_extra_line(KonusmaT)
+    except:
+        remove_loop(KonusmaT)
+
+
+db_name = "testdatabase"
+my_client = pymongo.MongoClient("mongodb://localhost:27017/")
+mongoDb, TutanakT, OturumT, KonusmaT = mConnectDB(my_client, db_name)
+
+remove_loop(KonusmaT)
+
+'''
 line = 0
 entries = os.listdir("./tutanak/")
 for entry in entries:
@@ -58,3 +99,4 @@ for entry in entries:
                         print(end="")
 
     break
+'''

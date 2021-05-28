@@ -1,4 +1,5 @@
 import pymongo
+from bson import Decimal128
 
 
 def mConnectDB(my_client, db_name):
@@ -19,22 +20,6 @@ def mCreateDB(my_client, db_name):
         return database, Tutanak, Oturum, Konusma
 
 
-def mCreateAnalysisDB(my_client, db_name):
-        database = my_client[db_name]
-        Lemma = database.create_collection("Lemma")
-        NER = database.create_collection("NER")
-        Topic = database.create_collection("Topic")
-        return database, Lemma, NER, Topic
-
-
-def mConnectAnalysisDB(my_client, db_name):
-    database = my_client[db_name]
-    Lemma = database.get_collection("Lemma")
-    NER = database.get_collection("NER")
-    Topic = database.get_collection("Topic")
-    return database, Lemma, NER, Topic
-
-
 def mStoreTutanak(Tutanak, TutanakID, Tutanaktext):
     mydict = {"TutanakID": TutanakID, "Tutanaktext": Tutanaktext}
     Tutanak.insert_one(mydict)
@@ -45,24 +30,10 @@ def mStoreOturum(Oturum, OturumID, Oturumtext):
     Oturum.insert_one(mydict)
 
 
-def mStoreKonusma(Konusma, KonusmaID, Konusmatext):
-    mydict = {"KonusmaID": KonusmaID, "Konusmatext": Konusmatext}
+def mStoreKonusma(Konusma, KonusmaID, Konusmatext, Lemma, NER, Sentiment):
+    mydict = {"KonusmaID": KonusmaID, "Konusmatext": Konusmatext.replace('.', ','), "Lemma": Lemma, "NER": NER,
+              "Sentiment": Sentiment}
     Konusma.insert_one(mydict)
-
-
-def mStoreLemma(Lemma, KonusmaID, Lemmas):
-    mydict = {"KonusmaID": KonusmaID, "Lemmas": Lemmas}
-    Lemma.insert_one(mydict)
-
-
-def mStoreNER(NER, KonusmaID, NERs):
-    mydict = {"KonusmaID": KonusmaID, "NERs": NERs}
-    NER.insert_one(mydict)
-
-
-def mStoreTopic(Topic, KonusmaID, Topics, Sentiments):
-    mydict = {"KonusmaID": KonusmaID, "Topics": Topics, "Sentiments": Sentiments}
-    Topic.insert_one(mydict)
 
 
 def mPrintAllDB(Tutanak, Oturum, Konusma):

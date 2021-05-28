@@ -6,7 +6,7 @@ def deleteDB(dbname):
         host="localhost",
         user="root",
         passwd="metehan199",
-        auth_plugin="mysql_native_password",
+        auth_plugin='mysql_native_password',
         database=dbname
     )
     if not db.is_connected():
